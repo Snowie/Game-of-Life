@@ -1,9 +1,9 @@
 import field
-import sdl2, sdl2/gfx
+import sdl2
 
 proc main() =
-  const width = 10
-  const height = 10
+  const width = 20
+  const height = 20
 
   var field: Field = createField(width, height)
 
@@ -12,14 +12,19 @@ proc main() =
   field[2][2].current = true
   field[3][2].current = true
 
+  #R pentomino
+  field[1 + 8][3 + 8].current = true
+  field[1 + 8][4 + 8].current = true
+  field[2 + 8][2 + 8].current = true
+  field[2 + 8][3 + 8].current = true
+  field[3 + 8][3 + 8].current = true
+
   #Setup SDL
   var
     win: WindowPtr
     ren: RendererPtr
     evt = sdl2.defaultEvent
     runGame = true
-    fpsman: FpsManager
-  fpsman.init
 
 
   discard init(INIT_EVERYTHING)
@@ -35,10 +40,13 @@ proc main() =
     quit(1)
 
   var cells: seq[seq[Rect]]
+
+  #Initiate an array of cells
   cells = newSeq[seq[Rect]](width)
   for i in 0..<len(cells):
     cells[i] = newSeq[Rect](height)
 
+  #Place these cells
   for y in 0..<len(cells):
     for x in 0..<len(cells[y]):
       cells[y][x].x = cint(x*40 + 1)
@@ -53,9 +61,9 @@ proc main() =
         runGame = false
         break
 
-    let dt = fpsman.getFramerate() / 1000
-    delay(300)
+    #Determine how the field will look for the next generation
     field.logic()
+    delay(300)
     ren.clear
     for y in 0..<len(field):
       for x in 0..<len(field[y]):
@@ -65,11 +73,14 @@ proc main() =
         else:
           #Set Color inactive
           setDrawColor(ren, uint8(0), uint8(0), uint8(0))
-        #drawFillRect(ren, cells[y][x])
+        #Draw the cell
         fillRect(ren, cells[y][x])
+
+    #Draw to the screen
     ren.present
+
+    #Move the field's future to current
     field.step()
-    fpsman.delay
 
   #Cleanup messy C libraries
   destroy ren
