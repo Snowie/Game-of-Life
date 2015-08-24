@@ -67,6 +67,12 @@ proc main() =
       cells[y][x].h = cint(cellMod - 1)
 
   var timeStart = epochtime()
+
+  #Keep arrays of cells to use sdl2's fillrects
+  var liveCells: array[200*200, Rect]
+  var deadCells: array[200*200, Rect]
+
+
   for i in 0..3_000:
     #Handle Events
     while pollEvent(evt):
@@ -78,16 +84,26 @@ proc main() =
     field.logic()
 
     ren.clear
+
+    #Keep track of where to place things, we never clear these.
+    var liveCellIndex = 0
+    var deadCellIndex = 0
+
     for y in 0..<len(field):
       for x in 0..<len(field[y]):
         if field[y][x].current:
-          #Set Color active
-          setDrawColor(ren, uint8(255), uint8(255), uint8(255))
+          #Add a cell to the active array
+          liveCells[liveCellIndex] = cells[y][x]
+          inc(liveCellIndex)
         else:
-          #Set Color inactive
-          setDrawColor(ren, uint8(0), uint8(0), uint8(0))
-        #Draw the cell
-        fillRect(ren, cells[y][x])
+          #Add a cell to the inactive array
+          deadCells[deadCellIndex] = cells[y][x]
+          inc(deadCellIndex)
+
+    setDrawColor(ren, uint8(255), uint8(255), uint8(255))
+    fillRects(ren, addr(liveCells[0]), cint(liveCellIndex))
+    setDrawColor(ren, uint8(0), uint8(0), uint8(0))
+    fillRects(ren, addr(deadCells[0]), cint(deadCellIndex))
 
     #Draw to the screen
     ren.present
@@ -97,41 +113,7 @@ proc main() =
 
   var timeStop = epochtime()
 
-  var renStart = epochTime()
-  for i in 0..200:
-    ren.clear
-    ren.present
-  var renEnd = epochTime()
-
-  var colorStart = epochtime()
-  for i in 0..200:
-    for y in 0..<len(field):
-      for x in 0..<len(field[y]):
-        if field[y][x].current:
-          #Set Color active
-          setDrawColor(ren, uint8(255), uint8(255), uint8(255))
-        else:
-          #Set Color inactive
-          setDrawColor(ren, uint8(0), uint8(0), uint8(0))
-        fillRect(ren, cells[y][x])
-  var colorEnd = epochtime()
-
-  var logicStart = epochtime()
-  for i in 0..200:
-    field.logic()
-  var logicEnd = epochtime()
-
-  var stepStart = epochtime()
-  for i in 0..200:
-    field.step()
-  var stepEnd = epochtime()
-
-  echo("Renderer time: ", renEnd - renStart)
-  echo("Color time:", colorEnd - colorStart)
-  echo("Logic time: ", logicEnd - logicStart)
-  echo("Step time: ", stepEnd - stepStart)
   echo("Program time: ", timeStop-timeStart)
-  #"""
   #Cleanup messy C libraries
   destroy ren
   destroy win
