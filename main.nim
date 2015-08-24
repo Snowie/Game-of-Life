@@ -1,4 +1,5 @@
 import field
+import times
 import sdl2
 
 proc main() =
@@ -34,7 +35,7 @@ proc main() =
     echo("Create window failed! Error: ", getError())
     quit(1)
 
-  ren = createRenderer(win, -1, Renderer_Accelerated or Renderer_PresentVsync)
+  ren = createRenderer(win, -1, Renderer_Accelerated)
   if ren == nil:
     echo("Create renderer failed! Error: ", getError())
     quit(1)
@@ -54,16 +55,20 @@ proc main() =
       cells[y][x].w = cint(40 - 1)
       cells[y][x].h = cint(40 - 1)
 
-  while runGame:
+  var generation: int = 0
+  var timeStart = epochtime()
+  for i in 0..19_999:
     #Handle Events
     while pollEvent(evt):
       if evt.kind == QuitEvent:
         runGame = false
         break
 
+    inc(generation)
+    #echo("Generation: ", generation)
     #Determine how the field will look for the next generation
     field.logic()
-    delay(300)
+    #delay(50)
     ren.clear
     for y in 0..<len(field):
       for x in 0..<len(field[y]):
@@ -81,7 +86,45 @@ proc main() =
 
     #Move the field's future to current
     field.step()
+  delay(10000)
+  discard """
+  var timeStop = epochtime()
 
+  var renStart = epochTime()
+  for i in 0..20000:
+    ren.clear
+    ren.present
+  var renEnd = epochTime()
+
+  var colorStart = epochtime()
+  for i in 0..20000:
+    for y in 0..<len(field):
+      for x in 0..<len(field[y]):
+        if field[y][x].current:
+          #Set Color active
+          setDrawColor(ren, uint8(255), uint8(255), uint8(255))
+        else:
+          #Set Color inactive
+          setDrawColor(ren, uint8(0), uint8(0), uint8(0))
+        fillRect(ren, cells[y][x])
+  var colorEnd = epochtime()
+
+  var logicStart = epochtime()
+  for i in 0..20000:
+    field.logic()
+  var logicEnd = epochtime()
+
+  var stepStart = epochtime()
+  for i in 0..20000:
+    field.step()
+  var stepEnd = epochtime()
+
+  echo("Renderer time: ", renEnd - renStart)
+  echo("Color time:", colorEnd - colorStart)
+  echo("Logic time: ", logicEnd - logicStart)
+  echo("Step time: ", stepEnd - stepStart)
+  echo("Program time: ", timeStop-timeStart)
+  """
   #Cleanup messy C libraries
   destroy ren
   destroy win
