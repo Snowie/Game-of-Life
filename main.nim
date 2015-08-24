@@ -3,8 +3,8 @@ import times
 import sdl2
 
 proc main() =
-  const width = 20
-  const height = 20
+  const width = 200
+  const height = 200
 
   var field: Field = createField(width, height)
 
@@ -20,6 +20,15 @@ proc main() =
   field[2 + 8][3 + 8].current = true
   field[3 + 8][3 + 8].current = true
 
+  #Acorn
+  field[100 + 1][100 + 2].current = true
+  field[100 + 2][100 + 4].current = true
+  field[100 + 3][100 + 1].current = true
+  field[100 + 3][100 + 2].current = true
+  field[100 + 3][100 + 5].current = true
+  field[100 + 3][100 + 6].current = true
+  field[100 + 3][100 + 7].current = true
+
   #Setup SDL
   var
     win: WindowPtr
@@ -30,7 +39,9 @@ proc main() =
 
   discard init(INIT_EVERYTHING)
 
-  win = createWindow("Conway's Game Of Life", 100, 100, 1024, 768, SDL_WINDOW_SHOWN)
+  win = createWindow("Conway's Game Of Life", 100, 100, 1440, 900, SDL_WINDOW_SHOWN)
+  const cellMod = min(1440 div 200, 900 div 200)
+
   if win == nil:
     echo("Create window failed! Error: ", getError())
     quit(1)
@@ -50,25 +61,22 @@ proc main() =
   #Place these cells
   for y in 0..<len(cells):
     for x in 0..<len(cells[y]):
-      cells[y][x].x = cint(x*40 + 1)
-      cells[y][x].y = cint(y*40 + 1)
-      cells[y][x].w = cint(40 - 1)
-      cells[y][x].h = cint(40 - 1)
+      cells[y][x].x = cint(x*cellMod + 1)
+      cells[y][x].y = cint(y*cellMod + 1)
+      cells[y][x].w = cint(cellMod - 1)
+      cells[y][x].h = cint(cellMod - 1)
 
-  var generation: int = 0
   var timeStart = epochtime()
-  for i in 0..19_999:
+  for i in 0..3_000:
     #Handle Events
     while pollEvent(evt):
       if evt.kind == QuitEvent:
         runGame = false
         break
 
-    inc(generation)
-    #echo("Generation: ", generation)
     #Determine how the field will look for the next generation
     field.logic()
-    #delay(50)
+
     ren.clear
     for y in 0..<len(field):
       for x in 0..<len(field[y]):
@@ -86,18 +94,17 @@ proc main() =
 
     #Move the field's future to current
     field.step()
-  delay(10000)
-  discard """
+
   var timeStop = epochtime()
 
   var renStart = epochTime()
-  for i in 0..20000:
+  for i in 0..200:
     ren.clear
     ren.present
   var renEnd = epochTime()
 
   var colorStart = epochtime()
-  for i in 0..20000:
+  for i in 0..200:
     for y in 0..<len(field):
       for x in 0..<len(field[y]):
         if field[y][x].current:
@@ -110,12 +117,12 @@ proc main() =
   var colorEnd = epochtime()
 
   var logicStart = epochtime()
-  for i in 0..20000:
+  for i in 0..200:
     field.logic()
   var logicEnd = epochtime()
 
   var stepStart = epochtime()
-  for i in 0..20000:
+  for i in 0..200:
     field.step()
   var stepEnd = epochtime()
 
@@ -124,7 +131,7 @@ proc main() =
   echo("Logic time: ", logicEnd - logicStart)
   echo("Step time: ", stepEnd - stepStart)
   echo("Program time: ", timeStop-timeStart)
-  """
+  #"""
   #Cleanup messy C libraries
   destroy ren
   destroy win
