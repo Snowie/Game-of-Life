@@ -20,6 +20,12 @@ proc sumNine(x: int, y: int, field: Field): int =
       #Add 1 to result if the cell is alive, else 0
       result += (if field[yIndex][xIndex].current: 1 else: 0)
 
+proc createField*(width: int, height: int): Field =
+  #Create a helper function to make fields
+  result = newSeq[seq[State]](width)
+  for i in 0..<len(result):
+    result[i] = newSeq[State](height)
+
 proc logic*(field: var Field) =
   #Calculate what the field will look like next
   for y in 0..<len(field):
