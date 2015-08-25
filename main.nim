@@ -46,7 +46,7 @@ proc main() =
       cells[y][x].h = cint(cellMod - 1)
 
   #Keep arrays of cells to use sdl2's fillrects
-  var liveCells: array[200*200, Rect]
+  var liveCells = newSeq[Rect](len(field) * len(field[0]))
 
   var timeStart = epochtime()
 
@@ -88,7 +88,7 @@ proc main() =
   var timeStop = epochtime()
 
   echo("Program time: ", timeStop-timeStart)
-  echo("Dataset: ", 200*200)
+  echo("Dataset: ", len(field) * len(field[0]))
   echo("Generations per second: ", 3000/(timeStop-timeStart))
   #Cleanup messy C libraries
   destroy ren
