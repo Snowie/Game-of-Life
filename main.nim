@@ -6,28 +6,7 @@ proc main() =
   const width = 200
   const height = 200
 
-  var field: Field = createField(width, height)
-
-  #A quick blinker to start us off
-  field[1][2].current = true
-  field[2][2].current = true
-  field[3][2].current = true
-
-  #R pentomino
-  field[1 + 8][3 + 8].current = true
-  field[1 + 8][4 + 8].current = true
-  field[2 + 8][2 + 8].current = true
-  field[2 + 8][3 + 8].current = true
-  field[3 + 8][3 + 8].current = true
-
-  #Acorn
-  field[100 + 1][100 + 2].current = true
-  field[100 + 2][100 + 4].current = true
-  field[100 + 3][100 + 1].current = true
-  field[100 + 3][100 + 2].current = true
-  field[100 + 3][100 + 5].current = true
-  field[100 + 3][100 + 6].current = true
-  field[100 + 3][100 + 7].current = true
+  var field: Field = loadFieldFromFile("test.txt")
 
   #Setup SDL
   var
@@ -40,7 +19,7 @@ proc main() =
   discard init(INIT_EVERYTHING)
 
   win = createWindow("Conway's Game Of Life", 100, 100, 1440, 900, SDL_WINDOW_SHOWN)
-  const cellMod = min(1440 div 200, 900 div 200)
+  let cellMod = min(1440 div len(field), 900 div len(field))
 
   if win == nil:
     echo("Create window failed! Error: ", getError())
@@ -77,6 +56,9 @@ proc main() =
       if evt.kind == QuitEvent:
         runGame = false
         break
+
+    if not runGame:
+      break
 
     #Determine how the field will look for the next generation
     field.logic()

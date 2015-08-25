@@ -26,6 +26,44 @@ proc createField*(width: int, height: int): Field =
   for i in 0..<len(result):
     result[i] = newSeq[State](height)
 
+proc saveToFile*(field: Field, filename: string) =
+  #Save a field to a file
+  var f: File
+  if f.open(filename, fmWrite):
+    for row in field:
+      for cell in row:
+        f.write(if cell.current: 'o' else: 'x')
+      f.writeln("")
+  else:
+    echo("Failed to open file")
+
+proc loadFieldFromFile*(filename: string): Field =
+  #Load a field from a file
+  var f: File
+  if f.open(filename):
+    var cells: seq[string] = newSeq[string]()
+
+    #Load the cells into something usable
+    for line in f.lines:
+      cells.add(line)
+
+    var field: Field = newSeq[seq[State]](len(cells))
+
+    #Load the cells into the field
+    for y in 0..<len(cells):
+      field[y] = newSeq[State](len(cells[y]))
+      for x in 0..<len(cells[y]):
+        field[y][x].current = if cells[y][x] == 'o': true else: false
+        field[y][x].next = false
+
+    #Cleanup
+    f.close()
+
+    return field
+  else:
+    echo("Failed to open file!")
+    return createField(0, 0)
+
 proc logic*(field: var Field) =
   #Calculate what the field will look like next
   for y in 0..<len(field):
