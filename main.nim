@@ -53,7 +53,7 @@ proc main() =
 
   var cells: seq[seq[Rect]]
 
-  #Initiate an array of cells
+  #Initiate an array of cells for drawing
   cells = newSeq[seq[Rect]](width)
   for i in 0..<len(cells):
     cells[i] = newSeq[Rect](height)
@@ -66,12 +66,10 @@ proc main() =
       cells[y][x].w = cint(cellMod - 1)
       cells[y][x].h = cint(cellMod - 1)
 
-  var timeStart = epochtime()
-
   #Keep arrays of cells to use sdl2's fillrects
   var liveCells: array[200*200, Rect]
-  var deadCells: array[200*200, Rect]
 
+  var timeStart = epochtime()
 
   for i in 0..3_000:
     #Handle Events
@@ -85,9 +83,8 @@ proc main() =
 
     ren.clear
 
-    #Keep track of where to place things, we never clear these.
+    #Keep track of where to place things, we never clear livecells.
     var liveCellIndex = 0
-    var deadCellIndex = 0
 
     for y in 0..<len(field):
       for x in 0..<len(field[y]):
@@ -95,15 +92,10 @@ proc main() =
           #Add a cell to the active array
           liveCells[liveCellIndex] = cells[y][x]
           inc(liveCellIndex)
-        else:
-          #Add a cell to the inactive array
-          deadCells[deadCellIndex] = cells[y][x]
-          inc(deadCellIndex)
 
     setDrawColor(ren, uint8(255), uint8(255), uint8(255))
     fillRects(ren, addr(liveCells[0]), cint(liveCellIndex))
     setDrawColor(ren, uint8(0), uint8(0), uint8(0))
-    fillRects(ren, addr(deadCells[0]), cint(deadCellIndex))
 
     #Draw to the screen
     ren.present
@@ -114,6 +106,8 @@ proc main() =
   var timeStop = epochtime()
 
   echo("Program time: ", timeStop-timeStart)
+  echo("Dataset: ", 200*200)
+  echo("Generations per second: ", 3000/(timeStop-timeStart))
   #Cleanup messy C libraries
   destroy ren
   destroy win
