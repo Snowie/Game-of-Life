@@ -1,11 +1,6 @@
-import field
-import times
-import sdl2
+import field, times, sdl2
 
 proc main() =
-  const width = 200
-  const height = 200
-
   var field: Field = loadFieldFromFile("test.txt")
 
   #Setup SDL
@@ -33,9 +28,9 @@ proc main() =
   var cells: seq[seq[Rect]]
 
   #Initiate an array of cells for drawing
-  cells = newSeq[seq[Rect]](width)
+  cells = newSeq[seq[Rect]](len(field))
   for i in 0..<len(cells):
-    cells[i] = newSeq[Rect](height)
+    cells[i] = newSeq[Rect](len(field[i]))
 
   #Place these cells
   for y in 0..<len(cells):
@@ -50,7 +45,9 @@ proc main() =
 
   var timeStart = epochtime()
 
-  for i in 0..3_000:
+  var generations= 3_000
+
+  for i in 0..generations:
     #Handle Events
     while pollEvent(evt):
       if evt.kind == QuitEvent:
@@ -89,7 +86,7 @@ proc main() =
 
   echo("Program time: ", timeStop-timeStart)
   echo("Dataset: ", len(field) * len(field[0]))
-  echo("Generations per second: ", 3000/(timeStop-timeStart))
+  echo("Generations per second: ", float(generations)/(timeStop-timeStart))
   #Cleanup messy C libraries
   destroy ren
   destroy win
