@@ -7,6 +7,7 @@ type
   State* = tuple[current: bool, future: bool]
   NodeObj = object
     state*: State
+    #Using 20 to assume no polygons over 20 sides
     neighbours*: array[20, Node]
     position*: Point
   Node* = ref NodeObj
@@ -23,6 +24,9 @@ proc hash*(n: Node): Hash =
 
 proc fieldInitWalk(n: var Node, nTable: var Table[Point, Node], width: int,
                   height: int, sides: int, pnt: var Point) =
+  #Initialize the field by walking the graph recursively
+  #TODO: Replace with iterative to support larger graphs
+
   #If we've gone out of bounds
   if pnt.x < 0 or pnt.x > width:
     return
@@ -38,8 +42,6 @@ proc fieldInitWalk(n: var Node, nTable: var Table[Point, Node], width: int,
   n.position = pnt
   nTable[n.position] = n
 
-  #n.neighbours = newSeq[Node](sides)
-
   var tempPoint: Point
 
   #Get the angle of the 'circle' pointing at the circumfrence
@@ -54,12 +56,16 @@ proc fieldInitWalk(n: var Node, nTable: var Table[Point, Node], width: int,
     tempPoint.x += round(cos(angleNum.toFloat * interiorAngle) * 4)
     tempPoint.y += round(sin(angleNum.toFloat * interiorAngle) * 4)
 
+    #If the node hasn't been created,
     if not nTable.hasKey(tempPoint):
+      #Create it
       fieldInitWalk(n.neighbours[angleNum], nTable, width, height, sides, tempPoint)
     else:
+      #Otherwise, properly assign it as a neighbour
       n.neighbours[angleNum] = nTable[tempPoint]
 
 proc initRandomField*(width: int, height: int, sides: int): Node =
+  #Helper function to init the field
   randomize()
 
   var p: Point
@@ -71,6 +77,7 @@ proc initRandomField*(width: int, height: int, sides: int): Node =
   fieldInitWalk(result, nTable, cast[int](width), cast[int](height), sides, p)
 
 proc sumSelfAndNeighbours*(n: Node): int =
+  #Returns the sum of states of neighbouring nodes and self
   if n == nil:
     return 0
   else:
@@ -81,7 +88,8 @@ proc sumSelfAndNeighbours*(n: Node): int =
       if n.neighbours[i].state.current:
         result += 1
 
-proc step*(n: var Node, nSet: var HashSet[Node]) =
+proc step(n: var Node, nSet: var HashSet[Node]) =
+  #Recursively shift the future state into current through graph
   n.state.current = n.state.future
   n.state.future = false
 
@@ -93,9 +101,11 @@ proc step*(n: var Node, nSet: var HashSet[Node]) =
         step(n.neighbours[i], nSet)
 
 proc step*(n: var Node) =
+  #Helper function to change states
   var nSet: HashSet[Node] = initSet[Node]()
   step(n, nSet)
 
 proc logic*(n: var Node, rules: proc(n: var Node, nSet: var HashSet[Node])) =
+  #Helper function to accept arbitrary rules to operate on the nodes
   var nSet: HashSet[Node] = initSet[Node]()
   rules(n, nSet)
