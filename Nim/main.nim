@@ -1,7 +1,7 @@
 import field, times, sdl2
 
 proc main() =
-  var field: Field = loadFieldFromFile("test.txt")
+  var field: Field = loadFieldFromFile("../test.txt")
 
   #Setup SDL
   var
