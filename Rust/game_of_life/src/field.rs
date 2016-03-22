@@ -58,9 +58,9 @@ fn sum_nine(field: &Vec<Vec<(bool, bool)>>, y: i32, x: i32) -> i32 {
     //Sum the 3x3 square
     let mut result = 0;
     for y_index in y-1..y+2 {
-        if y_index <= field.len() as i32  && y_index >= 0{
+        if y_index < field.len() as i32  && y_index >= 0{
             for x_index in x-1..x+2 {
-                if x_index <= field[y_index as usize].len() as i32 && x_index >= 0 {
+                if x_index < field[y_index as usize].len() as i32 && x_index >= 0 {
                     result +=
                         if field[y_index as usize][x_index as usize].0 {
                             1
@@ -76,9 +76,6 @@ fn sum_nine(field: &Vec<Vec<(bool, bool)>>, y: i32, x: i32) -> i32 {
 
 //Publicfunction to handle field logic.
 pub fn step_field(field: &mut Vec<Vec<(bool, bool)>>) {
-    //Swap it first
-    swap_state(field);
-
     //Figure out the future
     for y in 0..field.len() {
         for x in 0..field[y].len() {
@@ -93,6 +90,9 @@ pub fn step_field(field: &mut Vec<Vec<(bool, bool)>>) {
             }
         }
     }
+
+    //Swap to our newly calculated state
+    swap_state(field);
 }
 
 //Just swap the future to the present
